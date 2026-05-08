@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гриценко Д. | Личный сайт</title>
+    <style>
+        /* --- Стили CSS (Красивый дизайн) --- */
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --text-color: #333;
+            --error-color: #e11d48;
+            --success-bg: #dcfce7;
+            --success-text: #166534;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background-color: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--text-color);
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+
+        p.subtitle {
+            color: #666;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+            font-size: 14px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box; /* Важно для отступов */
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary-color);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* Сообщения об ошибках */
+        .error-message {
+            color: var(--error-color);
+            font-size: 13px;
+            margin-top: 5px;
+            display: none; /* Скрыто по умолчанию */
+        }
+
+        input.error-border, textarea.error-border {
+            border-color: var(--error-color);
+        }
+
+        /* Блок приветствия (результат) */
+        #resultContainer {
+            margin-top: 25px;
+            display: none; /* Скрыт по умолчанию */
+        }
+
+        .greeting-card {
+            background-color: var(--success-bg);
+            color: var(--success-text);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid var(--success-text);
+            line-height: 1.6;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Гриценко Д.</h1>
+        <p class="subtitle">Веб-разработчик & Дизайнер</p>
+    </header>
+    <!-- Форма -->
+    <form id="contactForm" novalidate>
+        <div class="form-group">
+            <label for="name">Имя</label>
+            <input type="text" id="name" placeholder="Введите ваше имя">
+            <div class="error-message" id="nameError">Пожалуйста, введите имя.</div>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="text" id="email" placeholder="example@mail.com">
+            <div class="error-message" id="emailError">Введите корректный email адрес.</div>
+        </div>
+
+        <div class="form-group">
+            <label for="comment">Комментарий</label>
+            <textarea id="comment" placeholder="Напишите что-нибудь..."></textarea>
+            <div class="error-message" id="commentError">Комментарий не может быть пустым.</div>
+        </div>
+
+        <button type="submit">Отправить сообщение</button>
+    </form>
+
+    <!-- Сюда будет выведен результат -->
+    <div id="resultContainer"></div>
+</div>
+
+<script>
+    // --- JAVASCRIPT (Логика работы) ---
+
+    // 1. Получаем элементы из HTML
+    const form = document.getElementById('contactForm');
+    const resultContainer = document.getElementById('resultContainer');
+
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const commentInput = document.getElementById('comment');
+
+    const nameError = document.getElementById('nameError');
+    const emailError = document.getElementById('emailError');
+    const commentError = document.getElementById('commentError');
+
+    // 2. Функция проверки валидности Email (Регулярное выражение)
+    function isValidEmail(email) {
+        // Простой паттерн: текст @ текст . текст
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    }
+
+    // 3. Функция показа ошибки
+    function showError(inputElement, errorElement) {
+        inputElement.classList.add('error-border');
+        errorElement.style.display = 'block';
+    }
+
+    // 4. Функция скрытия ошибки
+    function hideError(inputElement, errorElement) {
+        inputElement.classList.remove('error-border');
+        errorElement.style.display = 'none';
+    }
+
+    // 5. Обработчик события "Отправка формы"
+    form.addEventListener('submit', function(event) {
+        // Отменяем стандартную перезагрузку страницы
+        event.preventDefault();
+
+        // Сбрасываем предыдущие ошибки и результат
+        hideError(nameInput, nameError);
+        hideError(emailInput, emailError);
+        hideError(commentInput, commentError);
+        resultContainer.style.display = 'none';
+
+        let hasErrors = false;
+
+        // Проверка Имени
+        if (nameInput.value.trim() === '') {
+            showError(nameInput, nameError);
+            hasErrors = true;
+        }
+
+        // Проверка Email
+        if (emailInput.value.trim() === '' || !isValidEmail(emailInput.value)) {
+            showError(emailInput, emailError);
+            hasErrors = true;
+        }
+
+        // Проверка Комментария
+        if (commentInput.value.trim() === '') {
+            showError(commentInput, commentError);
+            hasErrors = true;
+        }
+
+        // Если есть ошибки, дальше не идем
+        if (hasErrors) {
+            return;
+        }
+
+        // === ЕСЛИ ВСЁ ЗАПОЛНЕНО ВЕРНО ===
+        
+        // Получаем чистые данные
+        const userName = nameInput.value;
+        const userEmail = emailInput.value;
+        const userComment = commentInput.value;
+
+        // Создаем элемент <p> (или div) с приветствием
+        const greetingElement = document.createElement('div');
+        greetingElement.className = 'greeting-card';
+        
+        // Заполняем HTML внутри элемента
+        greetingElement.innerHTML = `
+            <strong>Спасибо, ${userName}!</strong><br>
+            Ваше сообщение принято.<br>
+            <small>Мы ответим вам на ${userEmail} в ближайшее время.</small>
+            <hr style="border: 0; border-top: 1px solid #bbf7d0; margin: 10px 0;">
+            <em>"${userComment}"</em>
+        `;// Добавляем элемент на страницу
+        resultContainer.appendChild(greetingElement);
+        resultContainer.style.display = 'block';
+
+        // Очищаем форму
+        form.reset();
+    });
+</script>
+
+</body>
+</html>
